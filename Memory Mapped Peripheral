@@ -1,0 +1,82 @@
+Memory Mapped Peripheral:
+module Timer(
+input clk,
+input rst,
+input [23:0] initial,
+output reg [23:0] count
+);
+reg [23:0] counter;
+always @ (posedge clk or posedge rst) begin
+if (rst) begin
+counter <= initial;
+end else begin
+counter <= counter - 1;
+end
+end
+assign count = counter;
+endmodule
+module Divider(
+input [15:0] dividend,
+input [15:0] divisor,
+output reg [15:0] quotient,
+output reg [15:0] remainder
+);
+reg [15:0] dividend_reg;
+reg [15:0] divisor_reg;
+reg [15:0] quotient_reg;
+reg [15:0] remainder_reg;
+always @* begin
+dividend_reg = dividend;
+divisor_reg = divisor;
+end
+always @* begin
+{quotient_reg, remainder_reg} = dividend_reg / divisor_reg;
+end
+assign quotient = quotient_reg;
+assign remainder = remainder_reg;
+endmodule
+Testbench:
+module Timer_Testbench;
+parameter CLOCK_PERIOD = 10;
+reg clk = 0;
+reg rst = 0;
+reg [23:0] initial = 24'd1000000;
+Timer timer(
+.clk(clk),
+.rst(rst),
+.initial(initial),
+.count(count)
+);
+always #CLOCK_PERIOD clk = ~clk;
+initial begin
+#100;
+rst = 1;
+#100;
+rst = 0;
+#1000;
+$finish;
+end
+endmodule
+module Divider_Testbench;
+parameter CLOCK_PERIOD = 10;
+reg clk = 0;
+reg [15:0] dividend = 16'h1234;
+reg [15:0] divisor = 16'h00FF;
+reg [15:0] quotient;
+reg [15:0] remainder;
+Divider divider(
+.dividend(dividend),
+.divisor(divisor),
+.quotient(quotient),
+.remainder(remainder)
+);
+always #CLOCK_PERIOD clk = ~clk;
+initial begin
+#100;
+$display("Dividend: %h, Divisor: %h", dividend, divisor);
+#100;
+$display("Quotient: %h, Remainder: %h", quotient, remainder);
+#1000;
+$finish;
+end
+endmodule
